@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var platforms = [{
     x : 0,
     y : 50,
-    w : 500,
+    w : 400,
     h : 10
   }, {
-    x : 500,
+    x : 350,
     y : 10,
     w : 500,
     h : 10
@@ -73,9 +73,43 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updatePlatforms(dt) {
+    var rightMostPlatform = platforms[0];
     for (var i = 0; i < platforms.length; i++) {
       var platform = platforms[i];
       platform.x -= 100 * dt;
+      if (platform.x + platform.w > rightMostPlatform.x + rightMostPlatform.w) {
+        rightMostPlatform = platform;
+      }
+      if (platform.x > platform.w < 0) {
+        platform.dead = true; // recycle!
+      }
+    }
+    if (rightMostPlatform.x + rightMostPlatform.w < canvasWidth) {
+      createPlatform(rightMostPlatform);
+    }
+  }
+
+  function createPlatform(rightMostPlatform) {
+    var newPlatform;
+    for (var i = 0; i < platforms.length; i++) {
+      var platform = platforms[i];
+      if (platform.dead) {
+        newPlatform = platform;
+        break;
+      }
+    }
+    // if nothing to recycle, create one
+    if (!newPlatform) {
+      newPlatform = {};
+      platforms.push(newPlatform);
+    }
+    newPlatform.x = rightMostPlatform.x + rightMostPlatform.w + Math.floor(Math.random() * 50);
+    newPlatform.y = rightMostPlatform.y + Math.floor( (Math.random() - 0.5) * 16) * 10;
+    newPlatform.w = Math.floor((Math.random() * canvasWidth * 0.3));
+    newPlatform.h = 10;
+
+    if (newPlatform.y < 0) {
+      newPlatform.y = 0;
     }
   }
 
@@ -96,23 +130,35 @@ document.addEventListener('DOMContentLoaded', function () {
     // falling
     player.vy -= gravity * dt;
     player.y += player.vy * dt;
+    player.jumping = true; // we are falling, the collision code may cancel this
 
     // collisions
     for (var i = 0; i < platforms.length; i++) {
       var platform = platforms[i];
       if (overlap(platform, player)) {
         // collides from side => die
-        if (player.x < platform.x) {
-          player.x = platform.x - player.w;
-          player.dead = true;
+        // if player is fully above the middle of the platform, it's a fall from above
+        // if player is fully below the middle of the platform, it's a jump from below
+        if (player.x < platform.x && player.x + player.w > platform.x) {
+          if (player.y > platform.y + platform.h / 2) {
+            player.jumping = false;
+            player.y = platform.y + platform.h;
+            player.vy = 0;
+          } else if (player.y / player.h < platform.y + platform.h / 2) {
+            player.y = platform.y - player.h;
+            player.vy = 0;
+          } else {
+            player.x = platform.x - player.w;
+            player.dead = true;
+          }
         }
-        // collides from top => stop falling
+        // collides from above => stop falling
         else if (player.vy < 0) {
           player.jumping = false;
           player.y = platform.y + platform.h;
           player.vy = 0;
         }
-        // collides from bottom => stop jumping
+        // collides from below => stop ascending
         else if (player.vy > 0) {
           player.y = platform.y - player.h;
           player.vy = 0;
