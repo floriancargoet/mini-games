@@ -148,6 +148,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // collides from side or stand up into platform => die
         else if (leftInsidePlatform || rightInsidePlatform) {
           player.dead = true;
+          if (leftInsidePlatform && rightInsidePlatform) {
+            player.deathReason = 'crushed';
+          } else {
+            player.deathReason = 'collision';
+          }
         }
       }
 
@@ -155,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (player.y <= 0) {
         player.y = 0;
         player.dead = true;
+        player.deathReason = 'fall';
       }
     }
   }
@@ -177,7 +183,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (player.dead) {
-      printCenteredText("You're dead", canvasWidth / 2, canvasHeight / 2);
+      var text = "You're dead";
+      if (player.deathReason === 'crushed') {
+        text += ' - Keep your head low!';
+      }
+      printCenteredText(text, canvasWidth / 2, canvasHeight / 2);
     }
   }
 
