@@ -182,9 +182,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function printCenteredText(text, x, y) {
-    var width = ctx.measureText(text).width;
     var height = 30;
-    ctx.font = '30px sans-serif';
+    ctx.font = height + 'px sans-serif';
+    var width = ctx.measureText(text).width;
     ctx.fillText(text, x - width / 2, canvasHeight - y + height / 2);
   }
 
