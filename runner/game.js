@@ -193,6 +193,14 @@ document.addEventListener('DOMContentLoaded', function () {
     ev.preventDefault();
   }
 
+  function update(dt) {
+    if (player.dead) {
+      return;
+    }
+    updatePlatforms(dt);
+    updatePlayer(dt);
+  }
+
   document.addEventListener('keydown', function onKeyDown(ev) {
     var key = keyboard.keys[ev.which];
     if (key) {
@@ -211,11 +219,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }, false);
 
-
+  var updateResolution = 20/1000; // seconds
   loop(function main(dt) {
     if (!player.dead) {
-      updatePlatforms(dt);
-      updatePlayer(dt);
+      // multiple micro updates
+      while (dt > updateResolution) {
+        update(updateResolution);
+        dt -= updateResolution;
+      }
+      update(dt);
     }
     clear();
     render();
