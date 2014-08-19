@@ -4,7 +4,6 @@
  *
  * To do:
  * - splash animation
- * - platform generation
  * - allow crouched fall (!= crouch mid-jump)
  *
  */
@@ -28,22 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
   var platforms = [{
     x : 0,
     y : 50,
-    w : 400,
+    w : 800,
     h : 10
   }, {
-    x : 350,
-    y : 10,
-    w : 500,
-    h : 10
-  }, {
-    x : 600,
-    y : 30,
-    w : 150,
-    h : 10
-  }, {
-    x : 700,
-    y : 80,
-    w : 150,
+    x : 400,
+    y : 70,
+    w : 350,
     h : 10
   }];
 
@@ -103,13 +92,13 @@ document.addEventListener('DOMContentLoaded', function () {
       newPlatform = {};
       platforms.push(newPlatform);
     }
-    newPlatform.x = rightMostPlatform.x + rightMostPlatform.w + Math.floor(Math.random() * 50);
+    newPlatform.x = rightMostPlatform.x + rightMostPlatform.w + 30 + Math.floor(Math.random() * 50);
     newPlatform.y = rightMostPlatform.y + Math.floor( (Math.random() - 0.5) * 16) * 10;
-    newPlatform.w = Math.floor((Math.random() * canvasWidth * 0.3));
+    newPlatform.w = 20 + Math.floor((Math.random() * canvasWidth * 0.3));
     newPlatform.h = 10;
 
-    if (newPlatform.y < 0) {
-      newPlatform.y = 0;
+    if (newPlatform.y < 20) {
+      newPlatform.y = 20;
     }
   }
 
