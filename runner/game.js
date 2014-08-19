@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', function () {
   var canvasWidth  = canvas.width;
   var canvasHeight = canvas.height;
   var gravity = 1000;
+  var jumpTimer = 0;
+
+  var debug = {
+    yMax : 0
+  };
 
   var player = {
     color : '#c00',
@@ -108,9 +113,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // movement
     // jumping
-    if (keyboard.up && !player.jumping) {
+    if (keyboard.up && jumpTimer >= 0) {
+      // new jump
+      if (jumpTimer === 0) {
+        jumpTimer = 0.5;
+      }
       player.jumping = true;
-      player.vy = 400;
+      player.vy = 100 + 100 * Math.sqrt(2 * jumpTimer) + gravity * dt; // cancel gravity, reduce jump force over time
+      jumpTimer -= dt;
+    }
+    if (!keyboard.up) {
+      jumpTimer = -1;
     }
     // crouching
     if (keyboard.down && !player.jumping) {
@@ -139,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
           player.jumping = false;
           player.y = platform.y + platform.h;
           player.vy = 0;
+          jumpTimer = 0;
         }
         // collides from below => stop ascending
         else if (player.vy > 0 && below) {
@@ -162,6 +176,11 @@ document.addEventListener('DOMContentLoaded', function () {
         player.dead = true;
         player.deathReason = 'fall';
       }
+    }
+
+    // debug
+    if (player.y + player.h > debug.yMax) {
+      debug.yMax = player.y + player.h;
     }
   }
 
@@ -189,6 +208,11 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       printCenteredText(text, canvasWidth / 2, canvasHeight / 2);
     }
+  }
+
+  function renderDebug() {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, canvasHeight - debug.yMax, canvasWidth, 1);
   }
 
   function printCenteredText(text, x, y) {
@@ -241,5 +265,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     clear();
     render();
+    renderDebug();
   })
 });
