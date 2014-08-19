@@ -4,8 +4,8 @@
  *
  * To do:
  * - splash animation
- * - handle standing up after crouching under platform
  * - platform generation
+ * - allow crouched fall (!= crouch mid-jump)
  *
  */
 
@@ -114,6 +114,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updatePlayer(dt) {
+    player.lastX = player.x;
+    player.lastY = player.y;
+
     // movement
     // jumping
     if (keyboard.up && !player.jumping) {
@@ -136,37 +139,32 @@ document.addEventListener('DOMContentLoaded', function () {
     for (var i = 0; i < platforms.length; i++) {
       var platform = platforms[i];
       if (overlap(platform, player)) {
-        // collides from side => die
-        // if player is fully above the middle of the platform, it's a fall from above
-        // if player is fully below the middle of the platform, it's a jump from below
-        if (player.x < platform.x && player.x + player.w > platform.x) {
-          if (player.y > platform.y + platform.h / 2) {
-            player.jumping = false;
-            player.y = platform.y + platform.h;
-            player.vy = 0;
-          } else if (player.y / player.h < platform.y + platform.h / 2) {
-            player.y = platform.y - player.h;
-            player.vy = 0;
-          } else {
-            player.x = platform.x - player.w;
-            player.dead = true;
-          }
-        }
+        // boolean tests
+        var above = (player.lastY >= platform.y + platform.h);
+        var below = (player.lastY + player.h <= platform.y);
+        var leftInsidePlatform  = (player.x > platform.x && player.x < platform.x + platform.w);
+        var rightInsidePlatform = (player.x + player.w > platform.x &&  player.x + player.w < platform.x + platform.w);
+
         // collides from above => stop falling
-        else if (player.vy < 0) {
+        if (player.vy < 0 && above) {
           player.jumping = false;
           player.y = platform.y + platform.h;
           player.vy = 0;
         }
         // collides from below => stop ascending
-        else if (player.vy > 0) {
+        else if (player.vy > 0 && below) {
           player.y = platform.y - player.h;
           player.vy = 0;
+        }
+        // collides from side or stand up into platform => die
+        else if (leftInsidePlatform || rightInsidePlatform) {
+          player.dead = true;
         }
       }
 
       // falls under level => die
       if (player.y <= 0) {
+        player.y = 0;
         player.dead = true;
       }
     }
