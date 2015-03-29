@@ -1,20 +1,25 @@
+/* jshint browser:true */
 /*
  * Notes:
  * - the Y-axis orientation is "fixed" in rendering functions
  *
  * To do:
- * - splash animation
+ * - add bonuses
+ * - progressive platform speed
  * - allow crouched fall (!= crouch mid-jump)
+ * - splash animation
+ * - auto-pause when dt > max
  *
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-  var canvas = document.getElementById('game');
-  var ctx    = canvas.getContext('2d');
+  var canvas       = document.getElementById('game');
+  var ctx          = canvas.getContext('2d');
   var canvasWidth  = canvas.width;
   var canvasHeight = canvas.height;
-  var gravity = 1000;
-  var jumpTimer = 0;
+  var gravity      = 1800;
+  var jumpTimer    = 0;
+  var platformSpeed    = 100;
 
   var debug = {
     yMax : 0
@@ -30,15 +35,17 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   var platforms = [{
-    x : 0,
-    y : 50,
-    w : 800,
-    h : 10
+    x  : 0,
+    y  : 50,
+    w  : 800,
+    h  : 10,
+    vx : 100
   }, {
-    x : 400,
-    y : 70,
-    w : 350,
-    h : 10
+    x  : 400,
+    y  : 70,
+    w  : 350,
+    h  : 10,
+    vx : 100
   }];
 
   var keyboard = {
@@ -67,10 +74,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updatePlatforms(dt) {
+    platformSpeed += 10 * dt;
     var rightMostPlatform = platforms[0];
     for (var i = 0; i < platforms.length; i++) {
       var platform = platforms[i];
-      platform.x -= 100 * dt;
+      platform.x -= platform.vx * dt;
       if (platform.x + platform.w > rightMostPlatform.x + rightMostPlatform.w) {
         rightMostPlatform = platform;
       }
@@ -97,10 +105,11 @@ document.addEventListener('DOMContentLoaded', function () {
       newPlatform = {};
       platforms.push(newPlatform);
     }
-    newPlatform.x = rightMostPlatform.x + rightMostPlatform.w + 30 + Math.floor(Math.random() * 50);
-    newPlatform.y = rightMostPlatform.y + Math.floor( (Math.random() - 0.5) * 16) * 10;
-    newPlatform.w = 20 + Math.floor((Math.random() * canvasWidth * 0.3));
-    newPlatform.h = 10;
+    newPlatform.x  = rightMostPlatform.x + rightMostPlatform.w + 30 + Math.floor(Math.random() * 50);
+    newPlatform.y  = rightMostPlatform.y + Math.floor( (Math.random() - 0.5) * 16) * 10;
+    newPlatform.w  = 20 + Math.floor((Math.random() * canvasWidth * 0.3));
+    newPlatform.h  = 10;
+    newPlatform.vx = platformSpeed;
 
     if (newPlatform.y < 20) {
       newPlatform.y = 20;
@@ -119,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         jumpTimer = 0.5;
       }
       player.jumping = true;
-      player.vy = 100 + 100 * Math.sqrt(2 * jumpTimer) + gravity * dt; // cancel gravity, reduce jump force over time
+      player.vy = 150 + 50 * Math.sqrt(2 * jumpTimer) + gravity * dt; // cancel gravity, reduce jump force over time
       jumpTimer -= dt;
     }
     if (!keyboard.up) {
@@ -189,20 +198,25 @@ document.addEventListener('DOMContentLoaded', function () {
            (((rect1.y >= rect2.y) && (rect1.y < (rect2.y + rect2.h))) || ((rect2.y >= rect1.y) && (rect2.y < (rect1.y + rect1.h))));
   }
 
+  function rand(m, n) {
+    return m + Math.floor((n - m) * Math.random());
+  }
   function render() {
     // player
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, canvasHeight - player.y - player.h, player.w, player.h);
 
     // platform
-    ctx.fillStyle = '#333';
     for (var i = 0; i < platforms.length; i++) {
       var platform = platforms[i];
+      ctx.fillStyle = '#333';
       ctx.fillRect(platform.x, canvasHeight - platform.y - platform.h, platform.w, platform.h);
+      //ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      //ctx.fillRect(platform.x + rand(-3, 3), canvasHeight - platform.y - platform.h + rand(-3, 3), platform.w, platform.h);
     }
 
     if (player.dead) {
-      var text = "You're dead";
+      var text = 'You\'re dead';
       if (player.deathReason === 'crushed') {
         text += ' - Keep your head low!';
       }
@@ -213,6 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function renderDebug() {
     ctx.fillStyle = 'red';
     ctx.fillRect(0, canvasHeight - debug.yMax, canvasWidth, 1);
+    ctx.fillText('Speed: ' + Math.round(platformSpeed), 50, 50);
   }
 
   function printCenteredText(text, x, y) {
@@ -262,9 +277,10 @@ document.addEventListener('DOMContentLoaded', function () {
         dt -= updateResolution;
       }
       update(dt);
+
+      clear();
+      render();
+      renderDebug();
     }
-    clear();
-    render();
-    renderDebug();
-  })
+  });
 });
