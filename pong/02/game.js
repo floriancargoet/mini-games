@@ -11,23 +11,8 @@ Utils.onReady(function () {
   var canvasWidth  = canvas.width;
   var canvasHeight = canvas.height;
 
-  var bouncePaddle   = jsfxlib.createWave(["square",0,0.201,0,0.106,0,0.026,20,223,24,0,0,0,0.01,0.0003,0,     0,0,0.5,0,0,0,0,1,0,0,0.1,0]);
-  var bounceObstacle = jsfxlib.createWave(["square",0,0.201,0,0.106,0,0.026,20,223,24,0,0,0,0.01,0.0003,0,-0.602,0,0.5,0,0,0,0,1,0,0,0.1,0]);
-
-  // clone the bounceObstacle sound to play it multiple times simultaneously
-  bounceObstacle = {
-    pool : [
-      bounceObstacle,
-      bounceObstacle.cloneNode(),
-      bounceObstacle.cloneNode(),
-      bounceObstacle.cloneNode(),
-    ],
-    i : 0,
-    play : function () {
-      this.pool[this.i].play();
-      this.i = (this.i + 1) % this.pool.length;
-    }
-  };
+  var bouncePaddle   = Utils.makeSound(    ["square",0,0.201,0,0.106,0,0.026,20,223,24,0,0,0,0.01,0.0003,0,     0,0,0.5,0,0,0,0,1,0,0,0.1,0]);
+  var bounceObstacle = Utils.makeSoundPool(["square",0,0.201,0,0.106,0,0.026,20,223,24,0,0,0,0.01,0.0003,0,-0.602,0,0.5,0,0,0,0,1,0,0,0.1,0], 4);
 
   var keyboard = Utils.keyboard({
     38 : 'up',

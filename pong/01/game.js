@@ -11,7 +11,7 @@ Utils.onReady(function () {
   var canvasWidth  = canvas.width;
   var canvasHeight = canvas.height;
 
-  var bounce = jsfxlib.createWave(["square",0,0.201,0,0.106,0,0.026,20,223,24,0,0,0,0.01,0.0003,0,0,0,0.5,0,0,0,0,1,0,0,0.1,0]);
+  var bounce = Utils.makeSound(["square",0,0.201,0,0.106,0,0.026,20,223,24,0,0,0,0.01,0.0003,0,0,0,0.5,0,0,0,0,1,0,0,0.1,0]);
 
   var keyboard = Utils.keyboard({
     38 : 'up',
